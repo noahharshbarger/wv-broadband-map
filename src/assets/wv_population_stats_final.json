@@ -1,0 +1,21 @@
+{
+  "total_population": 1785754,
+  "underserved_population": 189079,
+  "underserved_percent": 10.6,
+  "high_speed_population": 1277929,
+  "high_speed_percent": 71.6,
+  "pop_weighted_median_speed": 256.6,
+  "population_by_tier": {
+    "Basic": 189079,
+    "Gigabit": 855229,
+    "High Speed": 418413,
+    "Standard": 318746,
+    "Ultra": 4287
+  },
+  "geographic_breakdown": {
+    "urban_population": 140227,
+    "rural_population": 1644427,
+    "urban_percent": 7.9,
+    "rural_percent": 92.1
+  }
+}
