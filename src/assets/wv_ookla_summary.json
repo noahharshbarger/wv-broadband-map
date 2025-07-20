@@ -1,0 +1,17 @@
+{
+  "data_period": "Q4 2024 (Oct-Dec)",
+  "data_source": "Ookla Speedtest",
+  "total_tiles": 15838,
+  "total_tests": 104963,
+  "unique_devices": 30491,
+  "median_download_mbps": 195.1,
+  "median_upload_mbps": 22.9,
+  "median_latency_ms": 15,
+  "speed_distribution": {
+    "basic": 2136,
+    "standard": 3211,
+    "high_speed": 3782,
+    "gigabit": 6671,
+    "ultra": 38
+  }
+}
