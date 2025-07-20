@@ -41,7 +41,8 @@ __pycache__/
 *.md
 screenshots/
 
-# Temporary processing files
+# Temporary processing files (but keep final app data)
 *_temp.*
-*_corrected.*
-*_final.*
+*_corrected.geojson
+!src/assets/wv_ookla_final_corrected.geojson
+!src/assets/wv_population_stats_final.json
