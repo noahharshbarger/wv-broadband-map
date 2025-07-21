@@ -336,7 +336,7 @@ and infrastructure investment strategies.
         const countyList = countiesData.features.map(feature => ({
           name: feature.properties.NAME,
           fips: feature.properties.COUNTY,
-          geoid: feature.properties.GEOID
+          geoid: feature.properties.STATE + feature.properties.COUNTY // 54 + 027 = 54027
         })).sort((a, b) => a.name.localeCompare(b.name));
         setCounties(countyList);
 
@@ -619,9 +619,9 @@ and infrastructure investment strategies.
                   <p><strong>County:</strong> ${countyName}</p>
                   <p><strong>Download Speed:</strong> ${props.download_mbps} Mbps</p>
                   <p><strong>Upload Speed:</strong> ${props.upload_mbps} Mbps</p>
-                  <p><strong>Ping:</strong> ${props.ping_ms} ms</p>
+                  <p><strong>Ping:</strong> ${props.latency_ms} ms</p>
                   <p><strong>Tests:</strong> ${props.tests} speed tests</p>
-                  <p><strong>Devices:</strong> ${props.devices} unique devices</p>
+                  <p><strong>Devices:</strong> ${props.devices} unique device${props.devices !== 1 ? 's' : ''}</p>
                 `
               };
             }
