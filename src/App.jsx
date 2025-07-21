@@ -487,7 +487,7 @@ and infrastructure investment strategies.
           }
         });
 
-        // Ookla speed test layers (real data!)
+        // Ookla speed test layers (population-weighted colors!)
         map.addLayer({
           id: 'ookla-fill',
           type: 'fill',
@@ -495,6 +495,8 @@ and infrastructure investment strategies.
           paint: {
             'fill-color': [
               'case',
+              ['!=', ['get', 'pop_scaled_color'], null],
+              ['get', 'pop_scaled_color'],
               ['!=', ['get', 'color'], null],
               ['get', 'color'],
               '#cccccc'
