@@ -509,37 +509,16 @@ and infrastructure investment strategies.
               10, 6, // At zoom 10, radius 6px
               14, 12 // At zoom 14, radius 12px
             ],
-            'circle-opacity': 0.8,
-            'circle-stroke-color': '#ffffff',
-            'circle-stroke-width': 1
+            'circle-opacity': 0.9,
+            'circle-stroke-color': 'rgba(255, 255, 255, 0.3)',
+            'circle-stroke-width': 0.5
           },
           layout: {
             'visibility': 'none'
           }
         });
 
-        map.addLayer({
-          id: 'ookla-outline',
-          type: 'circle',
-          source: 'ookla',
-          paint: {
-            'circle-color': 'transparent',
-            'circle-radius': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              6, 3,  // Slightly larger outline
-              10, 7,
-              14, 13
-            ],
-            'circle-stroke-color': '#ffffff',
-            'circle-stroke-width': 2,
-            'circle-opacity': 0
-          },
-          layout: {
-            'visibility': 'none'
-          }
-        });
+
 
         // Comparison/discrepancy layer (shows where FCC vs Ookla differ significantly)
         map.addLayer({
@@ -629,14 +608,20 @@ and infrastructure investment strategies.
             }
             
             if (layer === 'ookla-fill' && !layerData.ookla) {
+              // Get county name from tract GEOID (first 5 digits = state+county FIPS)
+              const countyFips = props.tract_geoid ? props.tract_geoid.substring(0, 5) : null;
+              const county = counties.find(c => c.geoid === countyFips);
+              const countyName = county ? `${county.name} County` : 'Unknown County';
+              
               layerData.ookla = {
                 title: `Ookla Speed Test`,
                 content: `
-                  <p><strong>County:</strong> ${props.NAMELSADCO}</p>
+                  <p><strong>County:</strong> ${countyName}</p>
                   <p><strong>Download Speed:</strong> ${props.download_mbps} Mbps</p>
                   <p><strong>Upload Speed:</strong> ${props.upload_mbps} Mbps</p>
                   <p><strong>Ping:</strong> ${props.ping_ms} ms</p>
-                  <p><strong>Provider:</strong> ${props.provider}</p>
+                  <p><strong>Tests:</strong> ${props.tests} speed tests</p>
+                  <p><strong>Devices:</strong> ${props.devices} unique devices</p>
                 `
               };
             }
@@ -799,7 +784,6 @@ and infrastructure investment strategies.
 
       if (map.getLayer('ookla-fill')) {
         map.setLayoutProperty('ookla-fill', 'visibility', ooklaVisibility);
-        map.setLayoutProperty('ookla-outline', 'visibility', ooklaVisibility);
       }
 
       if (map.getLayer('comparison-layer')) {
