@@ -509,9 +509,9 @@ and infrastructure investment strategies.
               10, 6, // At zoom 10, radius 6px
               14, 12 // At zoom 14, radius 12px
             ],
-            'circle-opacity': 0.9,
-            'circle-stroke-color': 'rgba(255, 255, 255, 0.3)',
-            'circle-stroke-width': 0.5
+            'circle-opacity': 0.85,
+            'circle-stroke-color': 'rgba(0, 0, 0, 0.1)',
+            'circle-stroke-width': 0.2
           },
           layout: {
             'visibility': 'none'
