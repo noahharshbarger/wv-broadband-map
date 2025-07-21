@@ -294,6 +294,19 @@ and infrastructure investment strategies.
   useEffect(() => {
     if (!mapboxgl.accessToken) {
       console.error('❌ Mapbox access token is missing!');
+      // Show error message in the UI
+      const mapContainer = mapRef.current;
+      if (mapContainer) {
+        mapContainer.innerHTML = `
+          <div style="padding: 20px; text-align: center; background: #f8f9fa; border: 2px solid #dc3545; border-radius: 8px; margin: 20px;">
+            <h3 style="color: #dc3545;">⚠️ Mapbox Token Required</h3>
+            <p>This demo requires a Mapbox access token for GitHub Pages deployment.</p>
+            <p><strong>For local development:</strong> Add VITE_MAPBOX_TOKEN to your .env file</p>
+            <p><strong>For GitHub Pages:</strong> Token must be embedded in code (not secure for production)</p>
+            <p><a href="https://account.mapbox.com/access-tokens/" target="_blank">Get a free Mapbox token here</a></p>
+          </div>
+        `;
+      }
       return;
     }
 
