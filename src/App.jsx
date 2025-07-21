@@ -610,6 +610,13 @@ and infrastructure investment strategies.
             if (layer === 'ookla-fill' && !layerData.ookla) {
               // Get county name from tract GEOID (first 5 digits = state+county FIPS)
               const countyFips = props.tract_geoid ? props.tract_geoid.substring(0, 5) : null;
+              console.log('Ookla County Debug:', {
+                tract_geoid: props.tract_geoid,
+                countyFips,
+                countiesLength: counties.length,
+                firstCounty: counties[0],
+                matchingCounty: counties.find(c => c.geoid === countyFips)
+              });
               const county = counties.find(c => c.geoid === countyFips);
               const countyName = county ? `${county.name} County` : 'Unknown County';
               
