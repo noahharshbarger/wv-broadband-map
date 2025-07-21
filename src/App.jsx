@@ -12,7 +12,7 @@ import ooklaSummaryUrl from './assets/wv_ookla_summary.json?url';
 import ooklaPopulationUrl from './assets/wv_ookla_final_corrected.geojson?url';
 import populationStatsUrl from './assets/wv_population_stats_final.json?url';
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoibmhhcnNoOTQiLCJhIjoiY21kOTdkeGIzMDR5bjJrcHZxajUxaGZpZSJ9.ts_k-krjTOtaIFlzDMv3ng';
 
 function App() {
   const mapRef = useRef(null);
