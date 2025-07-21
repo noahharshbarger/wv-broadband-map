@@ -38,8 +38,9 @@ __pycache__/
 .pytest_cache/
 *.pyc
 
-# Analysis artifacts
-*.md
+# Analysis artifacts - specific files only
+WV_Broadband_Transparency_Presentation.md
+Updated_Slide_Deck_Realistic.md
 screenshots/
 
 # Temporary processing files (but keep final app data)
