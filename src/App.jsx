@@ -490,10 +490,10 @@ and infrastructure investment strategies.
         // Ookla speed test layers (population-weighted colors!)
         map.addLayer({
           id: 'ookla-fill',
-          type: 'fill',
+          type: 'circle',
           source: 'ookla',
           paint: {
-            'fill-color': [
+            'circle-color': [
               'case',
               ['!=', ['get', 'pop_scaled_color'], null],
               ['get', 'pop_scaled_color'],
@@ -501,7 +501,17 @@ and infrastructure investment strategies.
               ['get', 'color'],
               '#cccccc'
             ],
-            'fill-opacity': 0.8
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              6, 2,  // At zoom 6, radius 2px
+              10, 6, // At zoom 10, radius 6px
+              14, 12 // At zoom 14, radius 12px
+            ],
+            'circle-opacity': 0.8,
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 1
           },
           layout: {
             'visibility': 'none'
@@ -510,12 +520,21 @@ and infrastructure investment strategies.
 
         map.addLayer({
           id: 'ookla-outline',
-          type: 'line',
+          type: 'circle',
           source: 'ookla',
           paint: {
-            'line-color': '#ffffff',
-            'line-width': 0.3,
-            'line-opacity': 0.6
+            'circle-color': 'transparent',
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              6, 3,  // Slightly larger outline
+              10, 7,
+              14, 13
+            ],
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 2,
+            'circle-opacity': 0
           },
           layout: {
             'visibility': 'none'
@@ -649,7 +668,7 @@ and infrastructure investment strategies.
           });
           
           // Filter out null values and create tabs
-          const validLayers = Object.entries(layerData).filter(([key, data]) => data !== null);
+          const validLayers = Object.entries(layerData).filter(([, data]) => data !== null);
           
           if (validLayers.length === 0) return;
           
