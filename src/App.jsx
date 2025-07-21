@@ -387,6 +387,17 @@ and infrastructure investment strategies.
           broadbandLookup[record.geoid] = record;
         });
 
+        // Create counties lookup for click handlers
+        const countiesLookup = {};
+        countiesData.features.forEach(feature => {
+          const geoid = feature.properties.STATE + feature.properties.COUNTY;
+          countiesLookup[geoid] = {
+            name: feature.properties.NAME,
+            fips: feature.properties.COUNTY,
+            geoid: geoid
+          };
+        });
+
         // Enhance tracts with broadband data
         tractsData.features.forEach(feature => {
           const geoid = feature.properties.GEOID;
@@ -610,14 +621,7 @@ and infrastructure investment strategies.
             if (layer === 'ookla-fill' && !layerData.ookla) {
               // Get county name from tract GEOID (first 5 digits = state+county FIPS)
               const countyFips = props.tract_geoid ? props.tract_geoid.substring(0, 5) : null;
-              console.log('Ookla County Debug:', {
-                tract_geoid: props.tract_geoid,
-                countyFips,
-                countiesLength: counties.length,
-                firstCounty: counties[0],
-                matchingCounty: counties.find(c => c.geoid === countyFips)
-              });
-              const county = counties.find(c => c.geoid === countyFips);
+              const county = countiesLookup[countyFips];
               const countyName = county ? `${county.name} County` : 'Unknown County';
               
               layerData.ookla = {
