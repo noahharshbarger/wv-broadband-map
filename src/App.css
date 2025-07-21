@@ -158,6 +158,24 @@
   border-bottom: none;
 }
 
+/* Population breakdown text styling */
+.population-breakdown {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #ecf0f1;
+}
+
+.population-breakdown p {
+  margin: 8px 0;
+  color: #34495e !important;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.population-breakdown strong {
+  color: #2c3e50 !important;
+}
+
 .control-group {
   margin-bottom: 12px;
 }
