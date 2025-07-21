@@ -1,0 +1,48 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.env
+
+# Large data files
+*.parquet
+*.zip
+
+# Python cache and temp files
+__pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.pytest_cache/
+*.pyc
+
+# Analysis artifacts
+*.md
+screenshots/
+
+# Temporary processing files (but keep final app data)
+*_temp.*
+*_corrected.geojson
+!src/assets/wv_ookla_final_corrected.geojson
+!src/assets/wv_population_stats_final.json
