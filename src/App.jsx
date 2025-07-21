@@ -550,164 +550,182 @@ and infrastructure investment strategies.
           }
         });
 
-        // Add click handlers for popup info
-        map.on('click', 'counties-fill', (e) => {
-          if (e.features && e.features.length > 0) {
-            const properties = e.features[0].properties;
-            console.log('County clicked:', properties);
+        // Unified click handler for all layers
+        map.on('click', (e) => {
+          // Query all visible features at the click point
+          const features = map.queryRenderedFeatures(e.point);
+          
+          if (features.length === 0) return;
+          
+          // Group features by layer type
+          const layerData = {
+            county: null,
+            tract: null,
+            broadband: null,
+            ookla: null,
+            comparison: null,
+            filter: null
+          };
+          
+          features.forEach(feature => {
+            const layer = feature.layer.id;
+            const props = feature.properties;
             
-            try {
-              const popup = new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                  <div>
-                    <h3>${properties.NAME} County</h3>
-                    <p><strong>State:</strong> ${properties.STATE_NAME || 'West Virginia'}</p>
-                    <p><strong>County Code:</strong> ${properties.COUNTY}</p>
-                    <p><strong>GEOID:</strong> ${properties.GEOID || properties.GEO_ID}</p>
-                  </div>
-                `)
-                .addTo(map);
-              
-              console.log('County popup created:', popup);
-            } catch (error) {
-              console.error('Error creating county popup:', error);
+            if (layer === 'counties-fill' && !layerData.county) {
+              layerData.county = {
+                title: `${props.NAME} County`,
+                content: `
+                  <p><strong>State:</strong> ${props.STATE_NAME || 'West Virginia'}</p>
+                  <p><strong>County Code:</strong> ${props.COUNTY}</p>
+                  <p><strong>GEOID:</strong> ${props.GEOID || props.GEO_ID}</p>
+                `
+              };
             }
+            
+            if (layer === 'tracts-fill' && !layerData.tract) {
+              const landAreaKm2 = props.ALAND ? (props.ALAND / 1000000).toFixed(2) : 'N/A';
+              layerData.tract = {
+                title: `Census Tract ${props.NAME}`,
+                content: `
+                  <p><strong>County:</strong> ${props.NAMELSADCO}</p>
+                  <p><strong>Tract ID:</strong> ${props.GEOID}</p>
+                  <p><strong>Land Area:</strong> ${landAreaKm2} km²</p>
+                `
+              };
+            }
+            
+            if (layer === 'broadband-fill' && !layerData.broadband) {
+              layerData.broadband = {
+                title: `Broadband - Tract ${props.NAME}`,
+                content: `
+                  <p><strong>County:</strong> ${props.NAMELSADCO}</p>
+                  <p><strong>Broadband Tier:</strong> ${props.broadband_tier}</p>
+                  <p><strong>Max Speed:</strong> ${props.broadband_down}↓/${props.broadband_up}↑ Mbps</p>
+                  <p><strong>Providers:</strong> ${props.broadband_providers}</p>
+                  <p><strong>Coverage:</strong> ${props.broadband_coverage}%</p>
+                `
+              };
+            }
+            
+            if (layer === 'ookla-fill' && !layerData.ookla) {
+              layerData.ookla = {
+                title: `Ookla Speed Test`,
+                content: `
+                  <p><strong>County:</strong> ${props.NAMELSADCO}</p>
+                  <p><strong>Download Speed:</strong> ${props.download_mbps} Mbps</p>
+                  <p><strong>Upload Speed:</strong> ${props.upload_mbps} Mbps</p>
+                  <p><strong>Ping:</strong> ${props.ping_ms} ms</p>
+                  <p><strong>Provider:</strong> ${props.provider}</p>
+                `
+              };
+            }
+            
+            if (layer === 'comparison-layer' && !layerData.comparison) {
+              layerData.comparison = {
+                title: `Discrepancy Area`,
+                content: `
+                  <p><strong>County:</strong> ${props.NAMELSADCO}</p>
+                  <p><strong>Download Speed:</strong> ${props.download_mbps} Mbps</p>
+                  <p><strong>Upload Speed:</strong> ${props.upload_mbps} Mbps</p>
+                  <p><strong>Ping:</strong> ${props.ping_ms} ms</p>
+                  <p><strong>⚠️ Significant Difference</strong></p>
+                `
+              };
+            }
+            
+            if (layer === 'speed-filter' && !layerData.filter) {
+              layerData.filter = {
+                title: `Underserved Area`,
+                content: `
+                  <p><strong>Tract:</strong> ${props.NAME}</p>
+                  <p><strong>County:</strong> ${props.NAMELSADCO}</p>
+                  <p><strong>Max Speed:</strong> ${props.broadband_down} Mbps</p>
+                  <p><strong>⚠️ Below ${speedThreshold} Mbps threshold</strong></p>
+                `
+              };
+            }
+          });
+          
+          // Filter out null values and create tabs
+          const validLayers = Object.entries(layerData).filter(([key, data]) => data !== null);
+          
+          if (validLayers.length === 0) return;
+          
+          // Create carousel popup HTML
+          const createCarouselPopup = (layers) => {
+            if (layers.length === 1) {
+              // Single layer - no carousel needed
+              return `
+                <div class="popup-content">
+                  <h3>${layers[0][1].title}</h3>
+                  ${layers[0][1].content}
+                </div>
+              `;
+            }
+            
+                         // Multiple layers - create carousel
+             const tabsHtml = layers.map((layer, index) => 
+               `<button class="popup-tab ${index === 0 ? 'active' : ''}" data-tab="${index}">${layer[0].charAt(0).toUpperCase() + layer[0].slice(1)}</button>`
+             ).join('');
+             
+             const contentHtml = layers.map(([, data], index) => 
+               `<div class="popup-panel ${index === 0 ? 'active' : ''}" data-panel="${index}">
+                 <h3>${data.title}</h3>
+                 ${data.content}
+               </div>`
+             ).join('');
+            
+            return `
+              <div class="popup-carousel">
+                <div class="popup-tabs">
+                  ${tabsHtml}
+                </div>
+                <div class="popup-panels">
+                  ${contentHtml}
+                </div>
+                <div class="popup-nav">
+                  <span class="popup-counter">1 of ${layers.length}</span>
+                </div>
+              </div>
+            `;
+          };
+          
+          try {
+            const popup = new mapboxgl.Popup({ maxWidth: '350px' })
+              .setLngLat(e.lngLat)
+              .setHTML(createCarouselPopup(validLayers))
+              .addTo(map);
+            
+            // Add carousel functionality after popup is added
+            setTimeout(() => {
+              const tabs = popup.getElement().querySelectorAll('.popup-tab');
+              const panels = popup.getElement().querySelectorAll('.popup-panel');
+              const counter = popup.getElement().querySelector('.popup-counter');
+              
+              tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => {
+                  // Remove active class from all tabs and panels
+                  tabs.forEach(t => t.classList.remove('active'));
+                  panels.forEach(p => p.classList.remove('active'));
+                  
+                  // Add active class to clicked tab and corresponding panel
+                  tab.classList.add('active');
+                  panels[index].classList.add('active');
+                  
+                  // Update counter
+                  if (counter) {
+                    counter.textContent = `${index + 1} of ${tabs.length}`;
+                  }
+                });
+              });
+            }, 100);
+            
+          } catch (error) {
+            console.error('Error creating carousel popup:', error);
           }
         });
 
-        map.on('click', 'tracts-fill', (e) => {
-          if (e.features && e.features.length > 0) {
-            const properties = e.features[0].properties;
-            console.log('Tract clicked:', properties);
-            
-            try {
-              const landAreaKm2 = properties.ALAND ? (properties.ALAND / 1000000).toFixed(2) : 'N/A';
-              
-              const popup = new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                  <div>
-                    <h3>Census Tract ${properties.NAME}</h3>
-                    <p><strong>County:</strong> ${properties.NAMELSADCO}</p>
-                    <p><strong>Tract ID:</strong> ${properties.GEOID}</p>
-                    <p><strong>Land Area:</strong> ${landAreaKm2} km²</p>
-                  </div>
-                `)
-                .addTo(map);
-              
-              console.log('Tract popup created:', popup);
-            } catch (error) {
-              console.error('Error creating tract popup:', error);
-            }
-          }
-        });
-
-        map.on('click', 'broadband-fill', (e) => {
-          if (e.features && e.features.length > 0) {
-            const properties = e.features[0].properties;
-            console.log('Broadband tract clicked:', properties);
-            
-            try {
-              const popup = new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                  <div>
-                    <h3>Census Tract ${properties.NAME}</h3>
-                    <p><strong>County:</strong> ${properties.NAMELSADCO}</p>
-                    <p><strong>Broadband Tier:</strong> ${properties.broadband_tier}</p>
-                    <p><strong>Max Speed:</strong> ${properties.broadband_down}↓/${properties.broadband_up}↑ Mbps</p>
-                    <p><strong>Providers:</strong> ${properties.broadband_providers}</p>
-                    <p><strong>Coverage:</strong> ${properties.broadband_coverage}%</p>
-                  </div>
-                `)
-                .addTo(map);
-              
-              console.log('Broadband popup created:', popup);
-            } catch (error) {
-              console.error('Error creating broadband popup:', error);
-            }
-          }
-        });
-
-        map.on('click', 'ookla-fill', (e) => {
-          if (e.features && e.features.length > 0) {
-            const properties = e.features[0].properties;
-            console.log('Ookla speed test clicked:', properties);
-            
-            try {
-              const popup = new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                  <div>
-                    <h3>Ookla Speed Test</h3>
-                    <p><strong>County:</strong> ${properties.NAMELSADCO}</p>
-                    <p><strong>Download Speed:</strong> ${properties.download_mbps} Mbps</p>
-                    <p><strong>Upload Speed:</strong> ${properties.upload_mbps} Mbps</p>
-                    <p><strong>Ping:</strong> ${properties.ping_ms} ms</p>
-                    <p><strong>Provider:</strong> ${properties.provider}</p>
-                  </div>
-                `)
-                .addTo(map);
-              
-              console.log('Ookla popup created:', popup);
-            } catch (error) {
-              console.error('Error creating Ookla popup:', error);
-            }
-          }
-        });
-
-        map.on('click', 'comparison-layer', (e) => {
-          if (e.features && e.features.length > 0) {
-            const properties = e.features[0].properties;
-            console.log('Comparison area clicked:', properties);
-            
-            try {
-              const popup = new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                  <div>
-                    <h3>Discrepancy Area</h3>
-                    <p><strong>County:</strong> ${properties.NAMELSADCO}</p>
-                    <p><strong>Download Speed:</strong> ${properties.download_mbps} Mbps</p>
-                    <p><strong>Upload Speed:</strong> ${properties.upload_mbps} Mbps</p>
-                    <p><strong>Ping:</strong> ${properties.ping_ms} ms</p>
-                    <p><strong>⚠️ Significant Difference</strong></p>
-                  </div>
-                `)
-                .addTo(map);
-              
-              console.log('Comparison popup created:', popup);
-            } catch (error) {
-              console.error('Error creating comparison popup:', error);
-            }
-          }
-        });
-
-        map.on('click', 'speed-filter', (e) => {
-          if (e.features && e.features.length > 0) {
-            const properties = e.features[0].properties;
-            
-            try {
-              const popup = new mapboxgl.Popup()
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                  <div>
-                    <h3>Underserved Area</h3>
-                    <p><strong>Tract:</strong> ${properties.NAME}</p>
-                    <p><strong>County:</strong> ${properties.NAMELSADCO}</p>
-                    <p><strong>Max Speed:</strong> ${properties.broadband_down} Mbps</p>
-                    <p><strong>⚠️ Below ${speedThreshold} Mbps threshold</strong></p>
-                  </div>
-                `)
-                .addTo(map);
-              
-              console.log('Filter popup created:', popup);
-            } catch (error) {
-              console.error('Error creating filter popup:', error);
-            }
-          }
-        });
+        // Old individual click handlers removed - now using unified carousel handler above
 
         // Change cursor on hover
         ['counties-fill', 'tracts-fill', 'broadband-fill', 'ookla-fill', 'comparison-layer', 'speed-filter'].forEach(layerId => {
